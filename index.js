@@ -17,9 +17,10 @@ app.use(bodyParser.json())
 app.get('/', function (req, res) {
 	res.send('Hello world, I am a chat bot')
 })
-
+console.log('kitty')
 // for Facebook verification
 app.get('/webhook/', function (req, res) {
+  console.log('eee', hub.verify_token)
 	if (req.query['hub.verify_token'] === 'my_voice_is_my_password_verify_me') {
 		res.send(req.query['hub.challenge'])
 	}
