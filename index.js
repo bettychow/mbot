@@ -66,7 +66,7 @@ app.get('/webhook', (req, res) => {
     }
   });
 
-  app.get('/', function (req, res) { 
+  app.get('/webhook', function (req, res) { 
     res.send('Hello'); 
   });
   
