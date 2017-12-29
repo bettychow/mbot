@@ -9,9 +9,6 @@ const
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
-
-
-
  // Creates the endpoint for Facebook webhook 
 app.post('/webhook', (req, res) => {  
   
@@ -39,7 +36,7 @@ app.post('/webhook', (req, res) => {
  });
 
  // Adds support for GET requests to Facebook webhook
-app.get('https://fathomless-cove-73598.herokuapp.com/webhook', (req, res) => {
+app.get('/', (req, res) => {
   
     // Your verify token. Should be a random string.
     let VERIFY_TOKEN = "verifycode"
@@ -66,7 +63,7 @@ app.get('https://fathomless-cove-73598.herokuapp.com/webhook', (req, res) => {
     }
   });
 
-  app.get('https://fathomless-cove-73598.herokuapp.com/', function (req, res) { 
+  app.get('/', function (req, res) { 
     res.send('Hello'); 
   });
   
