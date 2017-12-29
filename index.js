@@ -66,7 +66,7 @@ app.get('https://fathomless-cove-73598.herokuapp.com/webhook', (req, res) => {
     }
   });
 
-  app.get('/', function (req, res) { 
+  app.get('https://fathomless-cove-73598.herokuapp.com/', function (req, res) { 
     res.send('Hello'); 
   });
   
