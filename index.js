@@ -9,9 +9,6 @@ const
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log('webhook is listening'));
 
-app.get('/', function (req, res) { 
-  res.send('Hello'); 
-});
 
 
 
@@ -69,3 +66,7 @@ app.get('/webhook', (req, res) => {
     }
   });
 
+  app.get('/', function (req, res) { 
+    res.send('Hello'); 
+  });
+  
