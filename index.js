@@ -5,6 +5,7 @@ var mongoose = require("mongoose");
 
 var db = mongoose.connect("mongodb://heroku_qdhdtqh8:cr4804gtf8u2iijjtkp936cnsq@ds133557.mlab.com:33557/heroku_qdhdtqh8");
 var Movie = require("./models/movie");
+var Celeb = require("./models/celeb");
 
 var app = express();
 app.use(bodyParser.urlencoded({extended: false}));
@@ -80,6 +81,10 @@ function processPostback(event) {
         sendMessage(senderId, {text: "Awesome! What would you like to find out? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating' for the various details."});
     } else if (payload === "Incorrect") {
         sendMessage(senderId, {text: "Oops! Sorry about that. Try using the exact title of the movie"});
+    } else if(payload === "Get other info") {
+        sendMessage(senderId, {text: "Awesome! What would you like to find out? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating' for the various details."});
+    } else {
+        findCeleb(senderId, payload);
     }
 }
 
@@ -121,6 +126,7 @@ function findMovie(userId, movieTitle) {
     request("http://www.omdbapi.com/?i=tt3896198&apikey=11ddc4c0&type=movie&t=" + movieTitle, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var movieObj = JSON.parse(body);
+            console.log('=======', movieObj);
             if (movieObj.Response === "True") {
                 var query = {user_id: userId};
                 var update = {
@@ -181,19 +187,122 @@ function getMovieDetail(userId, field) {
             sendMessage(userId, {text: "Something went wrong. Try again"});
         } else {
 					console.log('ffff', movie[field]);
+          console.log('xxxxxxxxx', movie);
 
-			// 		if(field === 'cast') {
-			// 			let cast = movie[field].split(", ");
-			// 			let castData = cast.map(celeb => {
-			// 				return {type: "celeb", name: celeb}
-			// 			});
-			// 			console.log('ddd', castData)
-      //
-      //
-      // }
-      sendMessage(userId, movie[field]);
+					if(field === 'cast') {
+						let cast = movie[field].split(", ");
+						let castData = cast.map(celeb => {
+							return {type: "celeb", name: celeb}
+						});
+						console.log('ddddddddddd', cast)
+            var message = {
+                attachment: {
+                    type: "template",
+                    payload: {
+                        template_type: "generic",
+                        elements: [{
+                            title: movie.title,
+                            subtitle: "Cast. Click on the celeb's name to know more",
+                            buttons: []
+                        }]
+                    }
+                }
+            };
+
+                     let buttons = message.attachment.payload.elements[0].buttons
+
+
+                     for(let i = 0; i < 2; i++) {
+            					let celeb = {
+            					  type: "postback",
+            				  	title: cast[i],
+            				  	payload: cast[i]
+                      }
+
+            					buttons.push(celeb);
+                     }
+
+                     buttons.push(
+                       {
+             					  type: "postback",
+             				  	title: "Get other info",
+             				  	payload: "Get other info"
+                       }
+                     )
+
+                     console.log('++++++++++', message.attachment.payload.elements[0].buttons)
+          }
+      sendMessage(userId, message);
     }
   });
+}
+
+
+function findCeleb(userId, celeb) {
+
+  let celebQuery = celeb.toLowerCase().split(' ').join('+');
+
+  request(`https://api.themoviedb.org/3/search/person?api_key=7e4b27935bdf42e30eff3931dbeee374&query=${celebQuery}`, function (error, response, body) {
+    if(!error) {
+      var celebBody = JSON.parse(body)
+
+      var celebObj = celebBody.results[0];
+
+        console.log('bbbbbbbbbody', celebObj.name);
+
+      var query = {user_id: userId};
+      var update = {
+        user_id: userId,
+        name: celebObj.name,
+        id: celebObj.id,
+        known_for: celebObj.known_for,
+        pic_url: celebObj.profile_path,
+        popularity: celebObj.popularity
+      };
+      var options = {upsert: true};
+      Celeb.findOneAndUpdate(query, update, options, function(err, celeb) {
+        if (err) {
+    console.log("Database error: " + err);
+        } else {
+          var message = {
+        attachment: {
+            type: "template",
+            payload: {
+                template_type: "generic",
+                elements: [{
+                    title: celebObj.name,
+                    subtitle: "Is this the celeb you are looking for?",
+                    image_url: celebObj.profile_path === "N/A" ? "http://placehold.it/350x150" : celebObj.profile_path,
+                    buttons: [{
+                        type: "postback",
+                        title: "Yes",
+                        payload: "Yes"
+                    }, {
+                        type: "postback",
+                        title: "No",
+                        payload: "No"
+                  }]
+                }]
+              }
+            }
+          };
+          console.log('????????????????', message.attachment.payload.elements[0].buttons)
+          sendMessage(userId, message);
+        }
+
+      });
+
+    } else {
+      sendMessage(userId, {text: celebObj.Error});
+    }
+
+  });
+
+  request("https://api.themoviedb.org/3/person/6193?api_key=7e4b27935bdf42e30eff3931dbeee374", function (error, response, body) {
+
+  });
+
+
 }
 
 // sends message to user
