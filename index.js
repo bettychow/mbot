@@ -182,43 +182,16 @@ function getMovieDetail(userId, field) {
         } else {
 					console.log('ffff', movie[field]);
 
-					if(field === 'cast') {
-						let cast = movie[field].split(", ");
-						let castData = cast.map(celeb => {
-							return {type: "celeb", name: celeb}
-						});
-						console.log('ddd', castData)
-						message = {
-								attachment: {
-										type: "template",
-										payload: {
-												template_type: "generic",
-												elements: [{
-												    title: "Here is the cast",
-														subtitle: "Whom do you like most?",
-														buttons: []
-												}]
-										}
-								}
-						};
-console.log(message.attachment.payload.elements[0].buttons)
-
-         let buttons = message.attachment.payload.elements[0].buttons
-
-
-         for(let i = 0; i < castData.length; i++) {
-					let celeb = {
-					  type: "postback",
-				  	title: castData[i].name,
-				  	payload: castData[i].name
-          }
-
-					buttons.push(celeb);
-         }
-
-			 console.log('llll', message)
-            sendMessage(userId, message);
-      }
+			// 		if(field === 'cast') {
+			// 			let cast = movie[field].split(", ");
+			// 			let castData = cast.map(celeb => {
+			// 				return {type: "celeb", name: celeb}
+			// 			});
+			// 			console.log('ddd', castData)
+      //
+      //
+      // }
+      sendMessage(userId, movie[field]);
     }
   });
 }
@@ -229,7 +202,7 @@ function sendMessage(recipientId, message) {
 	console.log('hhh', recipientId)
     request({
         url: "https://graph.facebook.com/v2.6/me/messages",
-        qs: {access_token: "EAAFdfOUojVABAMka3jZAw7ydGBHZBf7gH1xqCYehq3OF3mGtndpsYahQCWPAlraDqLXMaDFIHot45EBI2SBWlWI7XbmXr1sTVNmPy0Lo7Yrkn2dbi7bZA3ySwnZAlezzVOxZAavXZBqDTF80HCW1l5b3T5Ro4Va7aaYs52IOqy9QZDZD"},
+        qs: {access_token: "EAAFdfOUojVABAJ7hUto8dE4FTVBm3kQG6JsWbDp16O8VasUAb51NQqhKqbH8BJm5TrQhHA2wp35qZArTEVbLewr2iQXBW2AMYY4ZBuA2RI8AuHnhH2XrxPQTX4RG8ZCOZCQrqMZBuvgoyAbbpZBfy6ZCxycBESCMknIsClQmvA9sAZDZD"},
         method: "POST",
         json: {
             recipient: {id: recipientId},
