@@ -152,22 +152,23 @@ function findMovie(userId, movieTitle) {
                         console.log("Database error: " + err);
                     } else {
                         message = {
-                            attachment: {
-                                type: "template",
-                                payload: {
-                                    template_type: "generic",
-                                    elements: [{
-                                        title: movieObj.Title,
-                                        subtitle: "Is this the movie you are looking for?",
-                                        image_url: movieObj.Poster === "N/A" ? "http://placehold.it/350x150" : movieObj.Poster,
-                                        buttons: [{
-                                            type: "postback",
-                                            title: "Yes",
-                                            payload: "Correct"
+                            "attachment": {
+                                "type": "template",
+                                "payload": {
+                                    "template_type": "generic",
+                                    "elements": [
+                                        {
+                                        "title": movieObj.Title,
+                                        "image_url": movieObj.Poster === "N/A" ? "http://placehold.it/350x150" : movieObj.Poster,
+                                        "subtitle": "Is this the movie you are looking for?",
+                                        "buttons": [{
+                                            "type": "postback",
+                                            "title": "Yes",
+                                            "payload": "Correct"
                                         }, {
-                                            type: "postback",
-                                            title: "No",
-                                            payload: "Incorrect"
+                                            "type": "postback",
+                                            "title": "No",
+                                            "payload": "Incorrect"
                                         }]
                                     }]
                                 }
@@ -320,10 +321,13 @@ function sendMessage(recipientId, message) {
         qs: {access_token: "EAAFdfOUojVABAJ7hUto8dE4FTVBm3kQG6JsWbDp16O8VasUAb51NQqhKqbH8BJm5TrQhHA2wp35qZArTEVbLewr2iQXBW2AMYY4ZBuA2RI8AuHnhH2XrxPQTX4RG8ZCOZCQrqMZBuvgoyAbbpZBfy6ZCxycBESCMknIsClQmvA9sAZDZD"},
         method: "POST",
         json: {
-            recipient: {id: recipientId},
+            recipient: {
+                id: recipientId
+            },
             message: message,
         }
     }, function(error, response, body) {
+        console.log('WHAT DOES FACEBOOK SERVER SAY')
         if (error) {
             console.log("Error sending message: " + response.error);
         }
