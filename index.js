@@ -202,14 +202,14 @@ function getMovieDetail(userId, field) {
 						});
 						console.log('ddddddddddd', cast)
             var message = {
-                attachment: {
-                    type: "template",
-                    payload: {
-                        template_type: "generic",
-                        elements: [{
-                            title: movie.title,
-                            subtitle: "Cast. Click on the celeb's name to know more",
-                            buttons: []
+                "attachment": {
+                    "type": "template",
+                    "payload": {
+                        "template_type": "generic",
+                        "elements": [{
+                            "title": movie.title,
+                            "subtitle": "Cast. Click on the celeb's name to know more",
+                            "buttons": []
                         }]
                     }
                 }
@@ -324,6 +324,8 @@ function sendMessage(recipientId, message) {
             message: message,
         }
     }, function(error, response, body) {
+
+      console.log("WHAT DOES FACEBOOK SERVER SAID")
         if (error) {
             console.log("Error sending message: " + response.error);
         }
