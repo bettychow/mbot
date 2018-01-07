@@ -1,47 +1,27 @@
-function getMovieDetail(userId, field) {
-    Movie.findOne({user_id: userId}, function(err, movie) {
-        if(err) {
-            sendMessage(userId, {text: "Something went wrong. Try again"});
-        } else {
-					console.log('ffff', movie[field]);
-
-					if(field === 'cast') {
-						let cast = movie[field].split(", ");
-						let castData = cast.map(celeb => {
-							return {type: "celeb", name: celeb}
-						});
-						console.log('ddd', castData)
-						message = {
-                attachment: {
-                    type: "template",
-                    payload: {
-                        template_type: "generic",
-                        elements: [{
-                            title: movie.title,
-                            subtitle: "Cast",
-                            buttons: []
-                        }]
-                    }
-                }
-            };
-console.log(message.attachment.payload.elements[0].buttons)
-
-         let buttons = message.attachment.payload.elements[0].buttons
-
-
-         for(let i = 0; i < castData.length; i++) {
-					let celeb = {
-					  type: "postback",
-				  	title: castData[i].name,
-				  	payload: castData[i].name
+curl -X POST -H "Content-Type: application/json" -d '{
+  "recipient":{
+    "id":"862420310549694"
+  },
+  "message":{
+    attachment: {
+        type: "template",
+        payload: {
+            template_type: "generic",
+            elements: [{
+                title: "gal",
+                subtitle: "Is this the celeb you are looking for?",
+                image_url: "http://placehold.it/350x150",
+                buttons: [{
+                    type: "postback",
+                    title: "Yes",
+                    payload: "Yes"
+                }, {
+                    type: "postback",
+                    title: "No",
+                    payload: "No"
+              }]
+            }]
           }
-
-					buttons.push(celeb);
-         }
-
-			 console.log('llll', message)
-            sendMessage(userId, message);
-      }
-    }
-  });
-}
+        }
+  }
+}' "https://graph.facebook.com/v2.6/me/messages?access_token=EAAFdfOUojVABAJ7hUto8dE4FTVBm3kQG6JsWbDp16O8VasUAb51NQqhKqbH8BJm5TrQhHA2wp35qZArTEVbLewr2iQXBW2AMYY4ZBuA2RI8AuHnhH2XrxPQTX4RG8ZCOZCQrqMZBuvgoyAbbpZBfy6ZCxycBESCMknIsClQmvA9sAZDZD"
