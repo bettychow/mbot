@@ -102,6 +102,8 @@ function processPostback(event) {
         sendMessage(senderId, {text: "Awesome! What would you like to find out? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating' for the various details."});
     } else if(payload === "Yes") {
         sendMessage(senderId, {text: "Sweet. What you do want to know? Enter 'birthday', 'biography', 'popularity', 'homepage'."  })
+    } else if(payload === "No") {
+        sendMessage(senderId, {text: "So what else do you want to find out about the moive? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating'."  })
     } else {
       findCeleb(senderId, payload);
     }
@@ -174,6 +176,7 @@ function findMovie(userId, movieTitle) {
                                 "type": "template",
                                 "payload": {
                                     "template_type": "generic",
+                                    "image_aspect_ratio": "square",
                                     "elements": [
                                         {
                                         "title": movieObj.Title,
@@ -273,97 +276,94 @@ function findCeleb(userId, celeb) {
     if(!error) {
       var celebBody = JSON.parse(body)
 
-      var celebObj = celebBody.results[0];
-
-        console.log('bbbbbbbbbody', celebObj.profile_path);
+      var celebObj1 = celebBody.results[0];
+console.log('OBJECT1', celebObj1);
 
       var query = {user_id: userId};
       var update = {
-        user_id: userId,
-        name: celebObj.name,
-        id: celebObj.id,
-        known_for: celebObj.known_for,
-        pic_url: celebObj.profile_path,
-        popularity: celebObj.popularity
+        id: celebObj1.id,
       };
       var options = {upsert: true};
-      Celeb.findOneAndUpdate(query, update, options, function(err, celeb) {
-        if (err) {
-    console.log("Database error: " + err);
-        } else {
-          var message = {
-        attachment: {
-            type: "template",
-            payload: {
-                template_type: "generic",
-                elements: [{
-                    title: celebObj.name,
-                    subtitle: "Is this the celeb you are looking for?",
-                    image_url: `https://image.tmdb.org/t/p/w300${celebObj.profile_path}`,
-                    buttons: [{
-                        type: "postback",
-                        title: "Yes",
-                        payload: "Yes"
-                    }, {
-                        type: "postback",
-                        title: "No",
-                        payload: "No"
-                  }]
-                }]
-              }
-            }
-          };
-          console.log('????????????????', message.attachment.payload.elements[0].title)
-          sendMessage(userId, message);
-        }
 
+      Celeb.findOneAndUpdate(query, update, options, function(err, celeb) {
+
+
+
+      Celeb.findOne({user_id: userId}, function(err, celeb) {
+        var celebID = celeb["id"];
+
+        request(`https://api.themoviedb.org/3/person/${celebID}?api_key=7e4b27935bdf42e30eff3931dbeee374`, function (error, response, body) {
+        //  console.log('jjjjjjjjjjjj', body);
+
+          var celebObj2 = JSON.parse(body);
+
+          console.log('jjjjjjjjj', celebObj2);
+          var query = {user_id: userId};
+          var update = {
+            user_id: userId,
+            name: celebObj1.name,
+            id: celebObj1.id,
+            known_for: celebObj1.known_for,
+            pic_url: celebObj1.profile_path,
+            popularity: celebObj1.popularity,
+            birthday: celebObj2.birthday,
+            biography: celebObj2.biography,
+            homepage: celebObj2.homepage
+          };
+          var options = {upsert: true};
+
+          console.log('pppppppppp===>', update);
+
+          Celeb.findOneAndUpdate(query, update, options, function(err, celeb) {
+            if (err) {
+              console.log("Database error: " + err);
+            } else {
+              var message = {
+            attachment: {
+                type: "template",
+                payload: {
+                    template_type: "generic",
+                    "image_aspect_ratio": "square",
+                    elements: [{
+                        title: celebObj1.name,
+                        subtitle: "Is this the celeb you are looking for?",
+                        image_url: `https://image.tmdb.org/t/p/w300${celebObj1.profile_path}`,
+                        buttons: [{
+                            type: "postback",
+                            title: "Yes",
+                            payload: "Yes"
+                        }, {
+                            type: "postback",
+                            title: "No",
+                            payload: "No"
+                      }]
+                    }]
+                  }
+                }
+              };
+              console.log('????????????????', message.attachment.payload.elements[0].title)
+              sendMessage(userId, message);
+            }
+
+          });
+
+        });
       });
+    });
+
 
     } else {
       sendMessage(userId, {text: celebObj.Error});
     }
 
   });
-
-
-
 }
 
 function getCelebDetail(userId, field) {
 
   Celeb.findOne({user_id: userId}, function(err, celeb) {
-    var celebID = celeb["id"];
-
-    request(`https://api.themoviedb.org/3/person/${celebID}?api_key=7e4b27935bdf42e30eff3931dbeee374`, function (error, response, body) {
-    //  console.log('jjjjjjjjjjjj', body);
-
-      var celebObj = JSON.parse(body);
-
-      console.log('jjjjjjjjj', celebObj);
-      var query = {user_id: userId};
-      var update = {
-        user_id: userId,
-        birthday: celebObj.birthday,
-        biography: celebObj.biography,
-        homepage: celebObj.homepage
-      };
-      var options = {upsert: true};
-
-      console.log('pppppppppp===>', update);
-
-      Celeb.findOneAndUpdate(query, update, options, function(err, celeb) {
-        if(err) {
-          console.log("Database error: ", err);
-        } else {
-          sendMessage(userId, {text: celeb[field]});
-        }
-      });
-
-    });
-  })
-
-
-
+    sendMessage(userId, {text: celeb[field]});
+  });
 
 }
 
