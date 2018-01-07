@@ -100,10 +100,10 @@ function processPostback(event) {
         sendMessage(senderId, {text: "Oops! Sorry about that. Try using the exact title of the movie"});
     } else if(payload === "Get other info") {
         sendMessage(senderId, {text: "Awesome! What would you like to find out? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating' for the various details."});
-    } else if (event.postback.title !== "Yes") {
-        findCeleb(senderId, payload);
+    } else if(payload === "Yes") {
+        sendMessage(senderId, {text: "Sweet. What you do want to know? Enter 'birthday', 'biography', 'popularity', 'homepage'."  })
     } else {
-      sendMessage(senderId, {text: "Broken"})
+      findCeleb(senderId, payload);
     }
 }
 
@@ -129,9 +129,14 @@ function processMessage(event) {
                 case "director":
                 case "cast":
                 case "rating":
-                    getMovieDetail(senderId, formattedMsg);
-                    break;
-
+                  getMovieDetail(senderId, formattedMsg);
+                  break;
+                case "birthday":
+                case "biography":
+                case "popularity":
+                case "homepage":
+                  getCelebDetail(senderId, formattedMsg);
+                  break;
                 default:
                     findMovie(senderId, formattedMsg);
             }
@@ -202,57 +207,57 @@ function findMovie(userId, movieTitle) {
 }
 
 function getMovieDetail(userId, field) {
-    Movie.findOne({user_id: userId}, function(err, movie) {
-        if(err) {
-            sendMessage(userId, {text: "Something went wrong. Try again"});
-        } else {
-					console.log('ffff', movie[field]);
-          console.log('xxxxxxxxx', movie);
+  Movie.findOne({user_id: userId}, function(err, movie) {
+    if(err) {
+      sendMessage(userId, {text: "Something went wrong. Try again"});
+    } else {
+	  console.log('ffff', movie[field]);
+    console.log('xxxxxxxxx', movie);
 
-					if(field === 'cast') {
-						let cast = movie[field].split(", ");
-						let castData = cast.map(celeb => {
-							return {type: "celeb", name: celeb}
-						});
-						console.log('ddddddddddd', cast)
-            var message = {
-                "attachment": {
-                    "type": "template",
-                    "payload": {
-                        "template_type": "generic",
-                        "elements": [{
-                            "title": movie.title,
-                            "subtitle": "Cast. Click on the celeb's name to know more",
-                            "buttons": []
-                        }]
-                    }
-                }
-            };
-
-                     let buttons = message.attachment.payload.elements[0].buttons
-
-
-                     for(let i = 0; i < 2; i++) {
-            					let celeb = {
-            					  type: "postback",
-            				  	title: cast[i],
-            				  	payload: cast[i]
-                      }
-
-            					buttons.push(celeb);
-                     }
-
-                     buttons.push(
-                       {
-             					  type: "postback",
-             				  	title: "Get other info",
-             				  	payload: "Get other info"
-                       }
-                     )
-
-                     console.log('++++++++++', message.attachment.payload.elements[0].buttons)
+	  if(field === 'cast') {
+		  let cast = movie[field].split(", ");
+		  let castData = cast.map(celeb => {
+			  return {type: "celeb", name: celeb}
+		  });
+		  console.log('ddddddddddd', cast)
+        var message = {
+          "attachment": {
+            "type": "template",
+            "payload": {
+              "template_type": "generic",
+              "elements": [{
+                "title": movie.title,
+                "subtitle": "Cast. Click on the celeb's name to know more",
+                "buttons": []
+              }]
+            }
           }
-      sendMessage(userId, message);
+        };
+
+        let buttons = message.attachment.payload.elements[0].buttons
+
+        for(let i = 0; i < 2; i++) {
+          let celeb = {
+            type: "postback",
+            title: cast[i],
+            payload: cast[i]
+          }
+          buttons.push(celeb);
+        }
+
+        buttons.push(
+          {
+   					  type: "postback",
+   				  	title: "Get other info",
+   				  	payload: "Get other info"
+          }
+        )
+           console.log('++++++++++', message.attachment.payload.elements[0].buttons)
+        sendMessage(userId, message);
+      } else {
+        sendMessage(userId, {text: movie[field]});
+      }
+
     }
   });
 }
@@ -270,7 +275,7 @@ function findCeleb(userId, celeb) {
 
       var celebObj = celebBody.results[0];
 
-        console.log('bbbbbbbbbody', celebObj.name);
+        console.log('bbbbbbbbbody', celebObj.profile_path);
 
       var query = {user_id: userId};
       var update = {
@@ -294,7 +299,7 @@ function findCeleb(userId, celeb) {
                 elements: [{
                     title: celebObj.name,
                     subtitle: "Is this the celeb you are looking for?",
-                    image_url: celebObj.profile_path === "N/A" ? "http://placehold.it/350x150" : celebObj.profile_path,
+                    image_url: `https://image.tmdb.org/t/p/w300${celebObj.profile_path}`,
                     buttons: [{
                         type: "postback",
                         title: "Yes",
@@ -308,7 +313,7 @@ function findCeleb(userId, celeb) {
               }
             }
           };
-          console.log('????????????????', message.attachment.payload.elements[0].buttons)
+          console.log('????????????????', message.attachment.payload.elements[0].title)
           sendMessage(userId, message);
         }
 
@@ -320,9 +325,44 @@ function findCeleb(userId, celeb) {
 
   });
 
-  request("https://api.themoviedb.org/3/person/6193?api_key=7e4b27935bdf42e30eff3931dbeee374", function (error, response, body) {
 
-  });
+
+}
+
+function getCelebDetail(userId, field) {
+
+  Celeb.findOne({user_id: userId}, function(err, celeb) {
+    var celebID = celeb["id"];
+
+    request(`https://api.themoviedb.org/3/person/${celebID}?api_key=7e4b27935bdf42e30eff3931dbeee374`, function (error, response, body) {
+    //  console.log('jjjjjjjjjjjj', body);
+
+      var celebObj = JSON.parse(body);
+
+      console.log('jjjjjjjjj', celebObj);
+      var query = {user_id: userId};
+      var update = {
+        user_id: userId,
+        birthday: celebObj.birthday,
+        biography: celebObj.biography,
+        homepage: celebObj.homepage
+      };
+      var options = {upsert: true};
+
+      console.log('pppppppppp===>', update);
+
+      Celeb.findOneAndUpdate(query, update, options, function(err, celeb) {
+        if(err) {
+          console.log("Database error: ", err);
+        } else {
+          sendMessage(userId, {text: celeb[field]});
+        }
+      });
+
+    });
+  })
+
+
 
 
 }
@@ -342,7 +382,7 @@ function sendMessage(recipientId, message) {
             message: message,
         }
     }, function(error, response, body) {
-        console.log('WHAT DOES FACEBOOK SERVER SAY')
+        console.log('WHAT DOES FACEBOOK SERVER SAY', body)
         if (error) {
             console.log("Error sending message: " + response.error);
         }

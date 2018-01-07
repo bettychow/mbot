@@ -7,7 +7,10 @@ var CelebSchema = new Schema({
   id: {type: String},
   known_for: {type: Array},
   pic_url: {type: String},
-  popularity: {type: String}
+  popularity: {type: String},
+  birthday: {type: String},
+  biography: {type: String},
+  homepage: {type: String}
 });
 
 module.exports = mongoose.model("Celeb", CelebSchema);
