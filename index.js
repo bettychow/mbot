@@ -38,7 +38,7 @@ app.post("/webhook", function (req, res) {
         // There may be multiple entries if batched
         req.body.entry.forEach(function(entry) {
             if (entry.messaging) {
-                console.log('\n\nSTANDBY ENTRY HERE:', entry.messaging)
+                console.log('\n\n MESSAGING ENTRY HERE:', entry.messaging)
                 // Iterate over each messaging event
                 entry.messaging.forEach(function(event) {
                     if (event.postback) {
@@ -69,6 +69,9 @@ function processPostback(event) {
     var senderId = event.sender.id;
     var payload = event.postback.payload || event.postback.title;
 
+    console.log('PAYLOAD', event.postback.payload);
+    console.log('TITLE', event.postback.title);
+
     if (payload === "Greeting") {
         // Get user's first name from the User Profile API
         // and include it in the greeting
@@ -97,8 +100,10 @@ function processPostback(event) {
         sendMessage(senderId, {text: "Oops! Sorry about that. Try using the exact title of the movie"});
     } else if(payload === "Get other info") {
         sendMessage(senderId, {text: "Awesome! What would you like to find out? Enter 'plot', 'date', 'runtime', 'director', 'cast' or 'rating' for the various details."});
-    } else {
+    } else if (event.postback.title !== "Yes") {
         findCeleb(senderId, payload);
+    } else {
+      sendMessage(senderId, {text: "Broken"})
     }
 }
 
@@ -324,7 +329,7 @@ function findCeleb(userId, celeb) {
 
 // sends message to user
 function sendMessage(recipientId, message) {
-	console.log('kkk', message)
+	//console.log('kkk', message.attachment.payload.elements)
 	console.log('hhh', recipientId)
     request({
         url: "https://graph.facebook.com/v2.6/me/messages",
