@@ -38,6 +38,7 @@ app.post("/webhook", function (req, res) {
         // There may be multiple entries if batched
         req.body.entry.forEach(function(entry) {
             if (entry.messaging) {
+                console.log('\n\nSTANDBY ENTRY HERE:', entry.messaging)
                 // Iterate over each messaging event
                 entry.messaging.forEach(function(event) {
                     if (event.postback) {
@@ -49,17 +50,24 @@ app.post("/webhook", function (req, res) {
             }
 
             if (entry.standby) {
-                console.log('STANDBY ENTRY HERE:', entry.standby)
+                console.log('\n\nSTANDBY ENTRY HERE:', entry.standby)
+                entry.standby.forEach(function(event) {
+                    if (event.postback) {
+                        processPostback(event);
+                    } else if (event.message) {
+                        processMessage(event);
+                    }
+              });
             }
-        });
+    });
 
-        res.sendStatus(200);
-    }
+    res.sendStatus(200);
+  }
 });
 
 function processPostback(event) {
     var senderId = event.sender.id;
-    var payload = event.postback.payload;
+    var payload = event.postback.payload || event.postback.title;
 
     if (payload === "Greeting") {
         // Get user's first name from the User Profile API
@@ -246,6 +254,8 @@ function getMovieDetail(userId, field) {
 
 
 function findCeleb(userId, celeb) {
+
+  console.log('=====> celeb', celeb);
 
   let celebQuery = celeb.toLowerCase().split(' ').join('+');
 
