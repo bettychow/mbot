@@ -308,7 +308,7 @@ console.log('OBJECT1', celebObj1);
             popularity: celebObj1.popularity,
             birthday: celebObj2.birthday,
             biography: celebObj2.biography,
-            homepage: celebObj2.homepage
+            homepage: celebObj2.homepage === null? "No homepage available" : celebObj2.homepage
           };
           var options = {upsert: true};
 
