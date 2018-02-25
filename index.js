@@ -21,7 +21,6 @@ app.get("/", function (req, res) {
 // Used for verification
 app.get("/webhook", function (req, res) {
     if (req.query["hub.verify_token"] === 'my_voice_is_my_password_verify_me') {
-        console.log("Verified webhook");
         res.status(200).send(req.query["hub.challenge"]);
     } else {
         console.error("Verification failed. The tokens do not match.");
@@ -31,7 +30,6 @@ app.get("/webhook", function (req, res) {
 
 // All callbacks for Messenger will be POST-ed here
 app.post("/webhook", function (req, res) {
-	console.log('bbb', req.body)
     // Make sure this is a page subscription
     if (req.body.object === "page") {
         // Iterate over each entry
@@ -68,9 +66,6 @@ app.post("/webhook", function (req, res) {
 function processPostback(event) {
     var senderId = event.sender.id;
     var payload = event.postback.payload || event.postback.title;
-
-    console.log('PAYLOAD', event.postback.payload);
-    console.log('TITLE', event.postback.title);
 
     if (payload === "Greeting") {
         // Get user's first name from the User Profile API
@@ -152,7 +147,7 @@ function findMovie(userId, movieTitle) {
     request("http://www.omdbapi.com/?i=tt3896198&apikey=11ddc4c0&type=movie&t=" + movieTitle, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             var movieObj = JSON.parse(body);
-            console.log('=======', movieObj);
+            
             if (movieObj.Response === "True") {
                 var query = {user_id: userId};
                 var update = {
@@ -195,12 +190,11 @@ function findMovie(userId, movieTitle) {
                                 }
                             }
                         };
-												console.log('mmmm', message)
+												
                         sendMessage(userId, message);
                     }
                 });
             } else {
-                console.log(movieObj.Error);
                 sendMessage(userId, {text: movieObj.Error});
             }
         } else {
@@ -214,15 +208,12 @@ function getMovieDetail(userId, field) {
     if(err) {
       sendMessage(userId, {text: "Something went wrong. Try again"});
     } else {
-	  console.log('ffff', movie[field]);
-    console.log('xxxxxxxxx', movie);
 
 	  if(field === 'cast') {
 		  let cast = movie[field].split(", ");
 		  let castData = cast.map(celeb => {
 			  return {type: "celeb", name: celeb}
 		  });
-		  console.log('ddddddddddd', cast)
         var message = {
           "attachment": {
             "type": "template",
@@ -255,7 +246,6 @@ function getMovieDetail(userId, field) {
    				  	payload: "Get other info"
           }
         )
-           console.log('++++++++++', message.attachment.payload.elements[0].buttons)
         sendMessage(userId, message);
       } else {
         sendMessage(userId, {text: movie[field]});
@@ -268,8 +258,6 @@ function getMovieDetail(userId, field) {
 
 function findCeleb(userId, celeb) {
 
-  console.log('=====> celeb', celeb);
-
   let celebQuery = celeb.toLowerCase().split(' ').join('+');
 
   request(`https://api.themoviedb.org/3/search/person?api_key=7e4b27935bdf42e30eff3931dbeee374&query=${celebQuery}`, function (error, response, body) {
@@ -277,7 +265,6 @@ function findCeleb(userId, celeb) {
       var celebBody = JSON.parse(body)
 
       var celebObj1 = celebBody.results[0];
-console.log('OBJECT1', celebObj1);
 
       var query = {user_id: userId};
       var update = {
@@ -293,11 +280,8 @@ console.log('OBJECT1', celebObj1);
         var celebID = celeb["id"];
 
         request(`https://api.themoviedb.org/3/person/${celebID}?api_key=7e4b27935bdf42e30eff3931dbeee374`, function (error, response, body) {
-        //  console.log('jjjjjjjjjjjj', body);
 
           var celebObj2 = JSON.parse(body);
-
-          console.log('jjjjjjjjj', celebObj2);
           var query = {user_id: userId};
           var update = {
             user_id: userId,
@@ -311,8 +295,6 @@ console.log('OBJECT1', celebObj1);
             homepage: celebObj2.homepage === null? "No homepage available" : celebObj2.homepage
           };
           var options = {upsert: true};
-
-          console.log('pppppppppp===>', update);
 
           Celeb.findOneAndUpdate(query, update, options, function(err, celeb) {
             if (err) {
@@ -341,7 +323,6 @@ console.log('OBJECT1', celebObj1);
                   }
                 }
               };
-              console.log('????????????????', message.attachment.payload.elements[0].title)
               sendMessage(userId, message);
             }
 
@@ -369,8 +350,7 @@ function getCelebDetail(userId, field) {
 
 // sends message to user
 function sendMessage(recipientId, message) {
-	//console.log('kkk', message.attachment.payload.elements)
-	console.log('hhh', recipientId)
+	
     request({
         url: "https://graph.facebook.com/v2.6/me/messages",
         qs: {access_token: "EAAFdfOUojVABAJ7hUto8dE4FTVBm3kQG6JsWbDp16O8VasUAb51NQqhKqbH8BJm5TrQhHA2wp35qZArTEVbLewr2iQXBW2AMYY4ZBuA2RI8AuHnhH2XrxPQTX4RG8ZCOZCQrqMZBuvgoyAbbpZBfy6ZCxycBESCMknIsClQmvA9sAZDZD"},
@@ -382,7 +362,6 @@ function sendMessage(recipientId, message) {
             message: message,
         }
     }, function(error, response, body) {
-        console.log('WHAT DOES FACEBOOK SERVER SAY', body)
         if (error) {
             console.log("Error sending message: " + response.error);
         }
