@@ -1,24 +1,24 @@
 # MBOT
 
-This is a Facebook Messenger chatbot that allows user to get details of movies and celebrities.
+This is a Facebook Messenger chatbot that interact with users and provide details of movies and celebrities upon queries by users.
 
-1. user input movie name
+1. User inputs movie's name
 - call processMessage
 
-2. bot replies with generic template to confirm if it is the movie he wants
+2. Chatbot replies with generic template to confirm if it is the movie he/she wants
 - buttons yes or no
 - call processPostback
 
-3. if user conform it's correct, bot asks user to get movie info
+3. If user conforms it's correct, chatbot asks user if he/she wants to get movie info
 - text message Used
 - call processPostback
 
-4. if user enter a field say e.g. 'cast', bot will reply with generic template with celebs' names on button to ask user to click on button to get info about celeb
+4. If user enter a field say e.g. 'cast', chatbot will reply with generic template with celebs' names on button, and ask user to click on button to get info about celeb
 - call processPostback
 
-5. bot will ask user to confirm if it is the celeb he wants by generic template
+5. Chatbot will ask user to confirm if it is the celeb he/she wants by generic template
 
-6. if user click yes, bot should return celeb's birthday and biography.
+6. If user click yes, bot should return celeb's birthday and biography.
 
 
 ## Quick Start
@@ -30,6 +30,3 @@ This is a Facebook Messenger chatbot that allows user to get details of movies a
 - mongodb
 - mongoose
 
-#TODOS
-
-[ ] Fix the double message sending bug
